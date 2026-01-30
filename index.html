@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nostalgia.fun</title>
+  <link rel="icon" type="image/webp" href="/other-pages/assets/favicon.webp">
+  <link rel="stylesheet" href="other-pages/css/index.css">
+
+</head>
+<style>
+.pagination-btn {
+  background-color: #00FFF7;
+  color: black; /* always black */
+  border: 2px solid #0ff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 
+    background-color 0.3s ease, 
+    color 0.3s ease, 
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+
+.pagination-btn:hover {
+  background-color: #0ff;
+  color: black;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px #0ff;
+}
+
+.pagination-btn.active {
+  background-color: #0ff;
+  color: black;
+  pointer-events: none;
+  transform: scale(1.05);
+  box-shadow: 0 0 8px #00fff7;
+}
+
+#paginationControls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px; /* more space between buttons */
+  margin-top: 20px;
+  margin-bottom: 1px;
+  flex-wrap: wrap;
+}
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: calc(100px * 10); /* 9 buttons wide, no gap */
+  margin-top: 20px;
+}
+</style>
+
+<header class="main-header" id="siteHeader">
+  <div class="logo">
+    <a href="/play-now">
+      <img src="/other-pages/assets/favicon.webp" alt="Logo" width="40" height="40">
+      <span>Nostalgia.fun</span>
+    </a>
+  </div>
+  <nav class="main-nav">
+    <a href="/privacy-policy">Privacy Policy</a>
+    <a href="/terms">TOS</a>
+    <a href="#newsletter-email">Newsletter</a>
+    <a href="/faq">FAQ</a>
+  </nav>
+</header>
+
+<body>
+
+  <h1>
+    <img src="other-pages/assets/banner.webp" alt="Nostalgia.fun" width="500" height="130" style="margin-top: 30px;" />
+  </h1>
+
+<div style="display: flex; align-items: center; gap: 8px;">
+  <input type="text" id="searchInput" placeholder="Search games..." />
+  <img id="randomGameBtn" src="/other-pages/assets/random.webp" alt="Random Game" title="Pick a Random Game" style="width: 32px; height: 32px; cursor: pointer; user-select: none;" />
+</div>
+
+<div id="muteContainer">
+  <input type="checkbox" id="muteCheckbox" />
+  <label for="muteCheckbox">Mute Theme Music</label>
+</div>
+
+  <div>
+    <div id="totalGames" class="total-games">Loading...</div>
+  </div>
+
+  <div class="categories" id="categories"></div>
+  <div class="link-grid" id="gameGrid"></div>
+  <div class="pagination" id="paginationControls"></div>
+
+  <!-- Game Info Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content" style="max-width: 600px; height: auto; padding: 20px; text-align: center;">
+      <img id="infoImage" src="" alt="Game Detail" style="max-width: 100%; border-radius: 12px; margin-bottom: 20px;" />
+      <div id="descriptionText" style="margin-bottom: 20px; font-size: 14px; text-align: left; max-height: 200px; overflow-y: auto;"></div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="playGameBtn" class="category-btn">Play Now</button>
+        <button id="viewManualBtn" class="category-btn">View Manual</button>
+        <button id="viewDemoBtn" class="category-btn">View Demo Video</button>
+        <button id="closeInfoBtn" class="modal-close" style="position: static; margin: 10px auto 0;">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Play Modal -->
+  <div class="modal" id="gameModal">
+    <div class="modal-content">
+      <iframe src="" id="gameFrame"></iframe>
+    </div>
+    <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
+  </div>
+
+  <!-- Manual PDF Modal -->
+  <div class="modal" id="manualModal">
+    <div class="modal-content">
+      <iframe id="manualFrame" src=""></iframe>
+    </div>
+    <button class="modal-close" id="closeManualModal">&times;</button>
+  </div>
+
+  <!-- Video Modal -->
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+	<iframe id="demoPlayerFrame" style="width: 100%; height: 80vh; border-radius: 12px; border: none; display: block; margin: 0 auto;"></iframe>
+    </div>
+    <button class="modal-close" id="closeVideoModal">&times;</button>
+  </div>
+
+<!-- Intro Screen -->
+<div id="introScreen" style="position:fixed; inset:0; background:#000; color:#0ff; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; overflow:hidden;">
+  <img src="/other-pages/assets/banner.webp" alt="Nostaliga.fun" width="500" height="130" style="margin-bottom: 1rem;">
+  <button id="enterBtn" class="neon-btn">Enter The Retro World NOW</button>
+  <audio id="introAudio" src="/other-pages/assets/theme-music.flac" preload="auto" loop></audio>
+</div>
+
+  <div id="modalGameTitle" class="modal-overlay-title"></div>
+
+  <footer>
+    <div>
+      <h3>About Nostalgia.fun</h3>
+      <p>The ultimate gaming portal with hundreds of retro games. This is the portal to Nostalgia.</p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p>Email: nostaliga.fun.support@gmail.com</p>
+      <p>Phone: +1 234 567 890</p>
+    </div>
+    <div>
+      <h3>Follow Us</h3>
+      <p><a href="#">Twitter</a></p>
+      <p><a href="#">Instagram</a></p>
+      <p><a href="#">Discord</a></p>
+    </div>
+    <div>
+      <h3>Quick Links</h3>
+      <p><a href="/faq">FAQ</a></p>
+      <p><a href="/privacy-policy">Privacy Policy</a></p>
+      <p><a href="/terms">Terms of Service</a></p>
+    </div>
+    <div class="newsletter">
+      <label for="newsletter-email" class="newsletter-label">
+        Newsletter — Subscribe to get news about new games!
+      </label>
+      <div class="newsletter-input-button">
+        <input type="email" id="newsletter-email" placeholder="Your email" />
+        <button>Subscribe</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/other-pages/js/search.js"></script>
+ <script>
+ /**
+ * © TS-DEV-JAVA -- Nostaliga.Fun
+ * All of the javascript code below belongs to Nostaliga.fun wich was made by TS-DEV-JAVA
+ * LICENSE: Apache 2.0
+ */
+const BASE_URL = "/games";
+const categoriesDiv = document.getElementById("categories");
+const gameGrid = document.getElementById("gameGrid");
+const modal = document.getElementById("gameModal");
+const iframe = document.getElementById("gameFrame");
+const closeBtn = document.getElementById("closeModal");
+const searchInput = document.getElementById("searchInput");
+const overlayTitle = document.getElementById("modalGameTitle");
+const infoModal = document.getElementById("infoModal");
+const infoImage = document.getElementById("infoImage");
+const playGameBtn = document.getElementById("playGameBtn");
+const viewManualBtn = document.getElementById("viewManualBtn");
+const viewDemoBtn = document.getElementById("viewDemoBtn");
+const closeInfoBtn = document.getElementById("closeInfoBtn");
+const manualModal = document.getElementById("manualModal");
+const manualFrame = document.getElementById("manualFrame");
+const closeManualModal = document.getElementById("closeManualModal");
+const descriptionText = document.getElementById("descriptionText");
+const introScreen = document.getElementById("introScreen");
+const enterBtn = document.getElementById("enterBtn");
+const introAudio = document.getElementById("introAudio");
+const videoModal = document.getElementById("videoModal");
+const demoPlayerFrame = document.getElementById("demoPlayerFrame");
+const closeVideoModal = document.getElementById("closeVideoModal");
+const randomGameBtn = document.getElementById("randomGameBtn");
+const muteCheckbox = document.getElementById("muteCheckbox");
+const siteHeader = document.getElementById("siteHeader");
+
+// hide header initially until intro is done
+siteHeader.style.display = "none";
+
+// mute checkbox logic
+muteCheckbox.addEventListener("change", () => {
+  if (muteCheckbox.checked) {
+    introAudio.pause();
+    introAudio.muted = true;
+  } else {
+    introAudio.muted = false;
+    if (
+      !modal.classList.contains("active") &&
+      !videoModal.classList.contains("active") &&
+      !manualModal.classList.contains("active")
+    ) {
+      introAudio.play().catch(() => {});
+    }
+  }
+});
+
+// Enter button logic
+enterBtn.addEventListener("click", () => {
+  introScreen.style.display = "none";
+  siteHeader.style.display = "flex";
+  if (!muteCheckbox.checked) {
+    introAudio.muted = false;
+    introAudio.play().catch(() => {});
+  } else {
+    introAudio.muted = true;
+  }
+});
+
+let gamesData = {};
+let fuse = null;
+
+fetch(`${BASE_URL}/gameslist.json`)
+  .then(res => res.json())
+  .then(games => {
+    gamesData = games;
+
+Object.keys(games).forEach(cat => {
+  const btn = document.createElement("button");
+  btn.className = "category-btn";
+  btn.style.display = "flex";
+  btn.style.alignItems = "center";
+  btn.style.justifyContent = "flex-start";
+  btn.style.gap = "8px";
+  btn.style.minWidth = "90px"; // Match your original button width
+  btn.style.padding = "8px"; // Match your original padding
+  btn.style.boxSizing = "border-box"; // Keep sizing consistent
+
+  // Create image
+  const img = document.createElement("img");
+  img.src = `${BASE_URL}/console_img/${cat}.webp`;
+  img.alt = `${cat} logo`;
+  img.style.width = "26px";
+  img.style.height = "24px";
+
+  // Create span for text
+  const text = document.createElement("span");
+  text.textContent = cat;
+  text.style.flex = "1"; // So text flows properly beside the icon
+
+  // Combine image and text
+  btn.appendChild(img);
+  btn.appendChild(text);
+
+  // Add click event
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderGames(cat, searchInput.value, 1); // Start at page 1
+  });
+
+  categoriesDiv.appendChild(btn);
+});
+
+    // set the first category
+    const firstCategory = Object.keys(games)[0];
+    if (firstCategory) {
+      const firstBtn = document.querySelector(".category-btn");
+      if (firstBtn) firstBtn.classList.add("active");
+      renderGames(firstCategory, "", 1);
+    }
+  }) 
+  .catch(err => console.error("Failed to load gameslist.json:", err)); // catch block now valid
+
+// search functionality
+searchInput.addEventListener("input", () => {
+  const query = searchInput.value.trim();
+  const activeBtn = document.querySelector(".category-btn.active");
+  if (!activeBtn) return;
+  renderGames(activeBtn.textContent, query, 1); // Start at page 1
+});
+
+function renderGames(category, query = "", currentPage = 1) {
+  gameGrid.innerHTML = "";
+  const paginationControls = document.getElementById("paginationControls");
+  paginationControls.innerHTML = "";
+
+  if (!gamesData[category]) {
+    gameGrid.innerHTML = `<p>No games found for category "${category}".</p>`;
+    return;
+  }
+
+  const gameList = gamesData[category].map(file => {
+    const cleanName = file
+      .replace(".html", "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+    return { file, cleanName };
+  });
+
+  let filteredGames = gameList;
+
+  if (query) {
+    fuse = new Fuse(gameList, {
+      keys: ["cleanName"],
+      threshold: 0.4,
+      ignoreLocation: true,
+      includeScore: true,
+    });
+    filteredGames = fuse.search(query).map(r => r.item);
+  }
+
+  const totalGames = filteredGames.length;
+  const gamesPerPage = 20;
+  const totalPages = Math.ceil(totalGames / gamesPerPage);
+
+  if (totalGames === 0) {
+    gameGrid.innerHTML = `<p>No games match your search.</p>`;
+    return;
+  }
+
+  // slice games for current page
+  const startIdx = (currentPage - 1) * gamesPerPage;
+  const endIdx = startIdx + gamesPerPage;
+  const gamesToShow = filteredGames.slice(startIdx, endIdx);
+
+  document.getElementById("totalGames").textContent = `Total Games For This Console/System: ${gamesData[category].length}`;
+
+  gamesToShow.forEach(({ file, cleanName }) => {
+    const a = document.createElement("a");
+    a.className = "game-link";
+	// a.href = "";
+    const img = document.createElement("img");
+    const baseName = file.replace(".html", "");
+    img.src = `${BASE_URL}/covers/${category}/${baseName}.webp`;
+    img.alt = cleanName;
+	
+	img.style.width = "235px";
+    img.style.height = "225px";
+    img.style.objectFit = "fill"; // stretch/squeeze to fill without maintaining aspect ratio
+	
+    const title = document.createElement("div");
+    title.textContent = cleanName;
+    a.append(img, title);
+
+    a.addEventListener("click", e => {
+      e.preventDefault();
+      showGameInfo(category, file, cleanName);
+    });
+
+    gameGrid.appendChild(a);
+  });
+
+  // pagination buttons
+  if (totalPages > 1) {
+    for (let page = 1; page <= totalPages; page++) {
+      const btn = document.createElement("button");
+      btn.className = "pagination-btn";
+      btn.textContent = `● ${page}`;
+
+      if (page === currentPage) {
+        btn.style.fontWeight = "bold";
+        btn.style.textDecoration = "underline";
+      }
+
+      btn.addEventListener("click", () => {
+        renderGames(category, query, page);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      paginationControls.appendChild(btn);
+    }
+  }
+}
+
+function showGameInfo(category, file, cleanName) {
+  const gameName = file.replace(".html", "");
+  const gameUrl = `${BASE_URL}/games-accualy/${category}/${file}`;
+  const imageUrl = `${BASE_URL}/4-mix/${category}/${gameName}.webp`;
+  const manualUrl = `${BASE_URL}/manuals/${category}/${gameName}.html`;
+  const descriptionUrl = `${BASE_URL}/descriptions/${category}/${gameName}.txt`;
+  const demoVideoUrl = `${BASE_URL}/videos/${category}/${gameName}.webm`;
+
+  infoImage.src = imageUrl;
+
+  fetch(descriptionUrl)
+    .then(response => {
+      if (!response.ok) throw new Error("No description available.");
+      return response.text();
+    })
+    .then(text => {
+      descriptionText.textContent = text;
+    })
+    .catch(() => {
+      descriptionText.textContent = "No description available.";
+    });
+
+playGameBtn.onclick = () => {
+  if (!muteCheckbox.checked) introAudio.pause();
+  iframe.src = gameUrl;
+  overlayTitle.textContent = `You are now Playing: ${cleanName} (${category})`;
+  overlayTitle.classList.add("active");
+  modal.classList.add("active");
+  infoModal.classList.remove("active");
+  siteHeader.style.display = "none";
+};
+
+viewManualBtn.onclick = () => {
+  if (!muteCheckbox.checked) introAudio.pause();
+
+  fetch(manualUrl)
+    .then(response => {
+      if (!response.ok) throw new Error("Manual HTML not available.");
+      // HTML manual exists
+      manualFrame.src = manualUrl;
+    })
+    .catch(() => {
+      // Fallback to PDF
+      const pdfUrl = `${BASE_URL}/manuals/${category}/${gameName}.pdf`;
+      const encodedPdfUrl = encodeURIComponent(pdfUrl);
+      manualFrame.src = `/other-pages/manual-viewer.html?pdf=${encodedPdfUrl}`;
+    })
+    .finally(() => {
+      overlayTitle.textContent = `Viewing Manual: ${cleanName} (${category})`;
+      overlayTitle.classList.add("active");
+      manualModal.classList.add("active");
+      infoModal.classList.remove("active");
+      siteHeader.style.display = "none";
+    });
+};
+
+viewDemoBtn.onclick = () => {
+  if (!muteCheckbox.checked) introAudio.pause();
+  const encodedUrl = encodeURIComponent(demoVideoUrl);
+  demoPlayerFrame.src = `/other-pages/demo-player.html?play=${encodedUrl}`;
+  overlayTitle.textContent = `Watching Demo: ${cleanName} (${category})`;
+  overlayTitle.classList.add("active");
+  videoModal.classList.add("active");
+  infoModal.classList.remove("active");
+  siteHeader.style.display = "none";
+};
+
+  infoModal.classList.add("active");
+}
+
+// random game logic
+randomGameBtn.addEventListener("click", () => {
+  if (randomGameBtn.classList.contains("spin-shake")) return;
+  randomGameBtn.classList.add("spin-shake");
+});
+
+randomGameBtn.addEventListener("animationend", () => {
+  randomGameBtn.classList.remove("spin-shake");
+
+  let allGames = [];
+  Object.keys(gamesData).forEach(category => {
+    gamesData[category].forEach(file => {
+      const cleanName = file
+        .replace(".html", "")
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+      allGames.push({ category, file, cleanName });
+    });
+  });
+
+  if (allGames.length === 0) return;
+
+  const query = searchInput.value.trim();
+  let filteredGames = allGames;
+
+  if (query) {
+    const fuseAll = new Fuse(allGames, {
+      keys: ["cleanName"],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+    filteredGames = fuseAll.search(query).map(r => r.item);
+    if (filteredGames.length === 0) {
+      alert("No games match your search.");
+      return;
+    }
+  }
+
+  const randomIndex = Math.floor(Math.random() * filteredGames.length);
+  const { category, file, cleanName } = filteredGames[randomIndex];
+
+  document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+  const catBtn = [...document.querySelectorAll(".category-btn")].find(b => b.textContent === category);
+  if (catBtn) catBtn.classList.add("active");
+
+  renderGames(category, query);
+  showGameInfo(category, file, cleanName);
+});
+
+// close modals
+closeBtn.addEventListener("click", () => {
+  modal.classList.remove("active");
+  iframe.src = "";
+  overlayTitle.classList.remove("active");
+  siteHeader.style.display = "flex"; 
+  if (!muteCheckbox.checked) introAudio.play().catch(() => {});
+});
+
+closeInfoBtn.addEventListener("click", () => {
+  infoModal.classList.remove("active");
+});
+
+closeManualModal.addEventListener("click", () => {
+  manualModal.classList.remove("active");
+  manualFrame.src = "";
+  overlayTitle.classList.remove("active");
+  siteHeader.style.display = "flex"; 
+  if (!muteCheckbox.checked) introAudio.play().catch(() => {});
+});
+
+closeVideoModal.addEventListener("click", () => {
+  videoModal.classList.remove("active");
+  demoPlayerFrame.src = "";
+  overlayTitle.classList.remove("active");
+  siteHeader.style.display = "flex";
+  if (!muteCheckbox.checked) introAudio.play().catch(() => {});
+});
+ </script>
+</body>
+</html>
